@@ -1,0 +1,29 @@
+{
+  "name": "nodejs-ecommerce",
+  "version": "1.0.0",
+  "description": "",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Vi-et/nodejs-ecommerce.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Vi-et/nodejs-ecommerce/issues"
+  },
+  "homepage": "https://github.com/Vi-et/nodejs-ecommerce#readme",
+  "dependencies": {
+    "express": "^4.21.2"
+  },
+  "devDependencies": {
+    "compression": "^1.8.0",
+    "helmet": "^8.0.0",
+    "morgan": "^1.10.0"
+  }
+}
