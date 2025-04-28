@@ -1,7 +1,5 @@
 'use strict'
 
-const { model } = require("mongoose");
-
 const dev = {
     app : {
         port : process.env.DEV_APP_PORT || 3000,
