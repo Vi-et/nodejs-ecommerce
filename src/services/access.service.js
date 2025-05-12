@@ -4,9 +4,9 @@ const shopModel = require('../models/shop.model')
 const bcrypt = require('bcrypt')
 const crypto = require('node:crypto')
 const keyTokenService = require('./keyToken.service')
-const { createTokenPair } = require('../auth/authUtils')
+const { createTokenPair,  verifyJWT } = require('../auth/authUtils')
 const { getInfoData } = require('../utils')
-const { BadRequestError, AuthFailureError } = require('../core/error.response')
+const { BadRequestError, AuthFailureError, ForbiddenError } = require('../core/error.response')
 const { findByEmail } = require('./user.service')
 
 const RoleShop = {
@@ -17,6 +17,45 @@ const RoleShop = {
 }
 
 class AccessService {
+    
+    static handleRefreshToken = async (refreshToken) => {
+        console.log('Refresh token:', refreshToken)
+        // Check xem có token nào đã trong danh sách refreshTokenUsed hay không
+        const foundRefreshTokenUsed = await keyTokenService.findByRefreshTokenUsed(refreshToken)
+        if(foundRefreshTokenUsed){
+            const  {userId, email} = await verifyJWT(refreshToken, foundRefreshTokenUsed.privateKey)
+            await keyTokenService.removeKeyTokenByUserId(userId)
+            throw new ForbiddenError('Some thing went wrong !! Please login again')
+        }
+
+        // Check xem token có tồn tại hay không
+        const holderToken = await keyTokenService.findByRefreshToken(refreshToken)
+        console.log('Holder token:', holderToken)
+        if (!holderToken) {
+            throw new AuthFailureError('User not found')
+        }
+
+        // Check xem token có hợp lệ hay không
+        const {userId, email} = await verifyJWT(refreshToken, holderToken.privateKey)
+        const foundUser = await findByEmail(email)
+        if (!foundUser) {
+            throw new AuthFailureError('User not found')
+        }
+
+        // create new token pair
+        const tokens = await createTokenPair({
+            userId: foundUser._id,
+            email: foundUser.email,
+        }, holderToken.publicKey, holderToken.privateKey)
+
+        keyTokenService.updateNewestToken(holderToken._id, tokens.refreshToken, refreshToken)
+
+        return {
+            shop: getInfoData({fields : ['_id', 'name', 'email', 'roles'], object : foundUser}),
+            tokens
+        }
+
+    }
 
     static logOut = async (keyStore) => {
         return await keyTokenService.removeKeyTokenById(keyStore._id)
