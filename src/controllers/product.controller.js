@@ -9,7 +9,7 @@ class ProductController {
             message: "Create product successfully",
             metadata: await ProductService.createProduct(req.body.product_type, {
                 ...req.body,
-                product_shop: req.user.userId,
+                product_shop: req.keyStore.user._id,
             }),
         }).send(res);
     }

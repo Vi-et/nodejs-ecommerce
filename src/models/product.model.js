@@ -32,7 +32,7 @@ var productSchema = new mongoose.Schema({
     product_type:{
         type:String,
         required:true,
-        enum: ['Electronics', 'Clothing', 'Furniture']
+        enum: ['electronic', 'clothing', 'furniture']
     },
 
     product_shop:{

@@ -14,11 +14,11 @@ class ProductFactory{
         this.productRegistry[productType] = productClass
     }
 
-    static async createProduct(payload){
+    static async createProduct(productType,payload){
         const productCLass = this.productRegistry[productType]
         if(!productCLass) throw new BadRequestError('Product type not found')
 
-        return await productCLass.createProduct(payload)
+        return await new productCLass(payload).createProduct()
     }
 }
 
@@ -50,7 +50,7 @@ class Product{
 
 class Clothing extends Product{
 
-    async createProduct(){
+    static async createProduct(){
         const newClothing = await clothing.create({...this.product_attributes, product_shop: this.product_shop})
         if(!newClothing) throw new BadRequestError('Create new clothing failed')
 
@@ -63,7 +63,7 @@ class Clothing extends Product{
 
 class Electronic extends Product{
 
-    async createProduct(){
+    static async createProduct(){
         const newElectronic = await electronic.create({...this.product_attributes, product_shop: this.product_shop})
         if(!newElectronic) throw new BadRequestError('Create new clothing failed')
 
@@ -75,7 +75,7 @@ class Electronic extends Product{
 }
 
 class Furniture extends Product{
-    async createProduct(){
+    static async createProduct(){
         const newFurniture = await furniture.create({...this.product_attributes, product_shop: this.product_shop})
         if(!newFurniture) throw new BadRequestError('Create new clothing failed')
 

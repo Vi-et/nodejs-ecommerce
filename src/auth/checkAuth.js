@@ -8,7 +8,6 @@ const HEADER = {
 
 const apiKey = async (req, res, next) => {
     try {
-        console.log(req.headers[HEADER.API_KEY])
        const key = req.headers[HEADER.API_KEY]?.toString()
        if (!key) {
            return res.status(401).json({ message: 'API key is missing' })

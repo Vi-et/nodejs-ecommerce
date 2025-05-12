@@ -8,7 +8,7 @@ const { createTokenPair,  verifyJWT } = require('../auth/authUtils')
 const { getInfoData } = require('../utils')
 const { BadRequestError, AuthFailureError, ForbiddenError } = require('../core/error.response')
 const { findByEmail } = require('./user.service')
-
+    
 const RoleShop = {
     SHOP : 'SHOP',
     WRITER : 'WRITER',
@@ -19,7 +19,6 @@ const RoleShop = {
 class AccessService {
     
     static handleRefreshToken = async (refreshToken) => {
-        console.log('Refresh token:', refreshToken)
         // Check xem có token nào đã trong danh sách refreshTokenUsed hay không
         const foundRefreshTokenUsed = await keyTokenService.findByRefreshTokenUsed(refreshToken)
         if(foundRefreshTokenUsed){
@@ -30,7 +29,6 @@ class AccessService {
 
         // Check xem token có tồn tại hay không
         const holderToken = await keyTokenService.findByRefreshToken(refreshToken)
-        console.log('Holder token:', holderToken)
         if (!holderToken) {
             throw new AuthFailureError('User not found')
         }
