@@ -2,7 +2,7 @@
 
 const {product, clothing, electronic, furniture} = require('../models/product.model')
 const { BadRequestError, AuthFailureError, ForbiddenError } = require('../core/error.response')
-const {findAllDraftsForShop, publishProductByShop, findAllPublishedForShop, unPublishProductByShop, searchProducts, findAllProducts} = require('../models/repositories/product.repo')
+const {findAllDraftsForShop, publishProductByShop, findAllPublishedForShop, unPublishProductByShop, searchProducts, findAllProducts, findProduct} = require('../models/repositories/product.repo')
 class ProductFactory{
 
     static productRegistry = {
@@ -61,7 +61,11 @@ class ProductFactory{
     }
 
     static async findAllProducts({limit = 50, sort = 'ctime', page = 1, filter = {isPublished:true  }}){
-        return await findAllProducts({limit, sort, page, filter, select: ["product_name", "product_thumb", "product_price", "product_quantity", "product_type", "product_shop"]})
+        return await findAllProducts({limit, sort, page, filter, select: ["product_name", "product_thumb", "product_price", "_id"]})
+    }
+
+    static async findProduct(productId){
+        return await findProduct(productId, ["__v"])
     }
 
     //END GET//

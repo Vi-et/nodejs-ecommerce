@@ -8,6 +8,7 @@ const { authentication } = require('../../auth/authUtils')
 
 router.get('/search/:keySearch', asyncHandler(productController.searchProducts))
 router.get("", asyncHandler(productController.findAllProducts))
+router.get('/:id', asyncHandler(productController.findProduct))
 router.use(authentication)
 router.post('', asyncHandler(productController.createProduct))
 router.get('/drafts/all', asyncHandler(productController.findAllDraftsForShop))
