@@ -2,6 +2,7 @@
 
 const {product, clothing, electronic, furniture} = require('../models/product.model')
 const { BadRequestError, AuthFailureError, ForbiddenError } = require('../core/error.response')
+const {findAllDraftsForShop, publishProductByShop, findAllPublishedForShop, unPublishProductByShop, searchProducts} = require('../models/repositories/product.repo')
 
 class ProductFactory{
 
@@ -13,13 +14,56 @@ class ProductFactory{
 
         this.productRegistry[productType] = productClass
     }
-
+    //POST//
     static async createProduct(productType,payload){
         const productCLass = this.productRegistry[productType]
         if(!productCLass) throw new BadRequestError('Product type not found')
         const newProduct = await new productCLass(payload).createProduct()
         return newProduct
     }
+
+    //END POST//
+
+    //PUT//
+    static async publishProductByShop(shopId, productId){
+        if(!shopId || !productId) throw new BadRequestError('Shop id or product id is not valid')
+        return await publishProductByShop(shopId, productId)
+    
+    }
+
+    static async unPublishProductByShop(shopId, productId){
+        if(!shopId || !productId) throw new BadRequestError('Shop id or product id is not valid')
+        return await unPublishProductByShop(shopId, productId)
+    }
+    //END PUT//
+    //GET//
+
+    static async findAllDraftsForShop(shop, limit=50, skip=0){
+        if(!shop) throw new BadRequestError('Shop id is not valid')
+        
+        return await findAllDraftsForShop({
+            product_shop: shop,
+            isDraft: true
+        }, limit, skip);
+    }
+
+    static async findAllPublishedForShop(shop, limit=50, skip=0){
+        if(!shop) throw new BadRequestError('Shop id is not valid')
+        
+        return await findAllPublishedForShop({
+            product_shop: shop,
+            isPublished: true
+        }, limit, skip);
+    }
+
+    static async searchProducts({keySearch}){
+        if(!keySearch) throw new BadRequestError('Key search is not valid')
+        return await searchProducts(keySearch)
+    }
+
+    //END GET//
+    //DELETE//
+    //END DELETE//
 }
 
 class Product{
