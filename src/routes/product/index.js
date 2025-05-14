@@ -7,7 +7,7 @@ const {asyncHandler} = require('../../auth/checkAuth')
 const { authentication } = require('../../auth/authUtils')
 
 router.get('/search/:keySearch', asyncHandler(productController.searchProducts))
-
+router.get("", asyncHandler(productController.findAllProducts))
 router.use(authentication)
 router.post('', asyncHandler(productController.createProduct))
 router.get('/drafts/all', asyncHandler(productController.findAllDraftsForShop))

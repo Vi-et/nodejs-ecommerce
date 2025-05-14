@@ -1,8 +1,7 @@
 'use strict'
 
-const { keyBy } = require('lodash')
 const {product, clothing, electronic, furniture} = require('../product.model')
-
+const {getSelectData} = require('../../utils')
 const findAllDraftsForShop = async (query, limit, skip) => {
     return await queryProduct(query, skip, limit)
 }
@@ -53,10 +52,26 @@ const searchProducts = async (keySearch) => {
     return results
 }
 
+const findAllProducts = async({limit, sort, page, filter, select}) => {
+    const skip = (page - 1) * limit
+    const sortBy = sort === "ctime" ? {_id: -1} : {_id: 1}
+    const products = await product
+        .find(filter)
+        .select(getSelectData(select))
+        .sort(sortBy)
+        .skip(skip)
+        .limit(limit)
+        .lean()
+        .exec()
+    
+    return products
+}
+
 module.exports = {
     findAllDraftsForShop,
     publishProductByShop,
     findAllPublishedForShop,
     unPublishProductByShop,
-    searchProducts
+    searchProducts,
+    findAllProducts
 }
