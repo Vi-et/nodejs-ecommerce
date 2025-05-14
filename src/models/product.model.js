@@ -89,9 +89,13 @@ const clothingSchema = new mongoose.Schema({
         required: true
     },
     
-    size: String,
+    size: {
+    type: String,
+},
 
-    material: String,
+    material: {
+        type: String,
+    },
     product_shop: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "Shop"

@@ -2,7 +2,7 @@
 
 const {product, clothing, electronic, furniture} = require('../models/product.model')
 const { BadRequestError, AuthFailureError, ForbiddenError } = require('../core/error.response')
-const {findAllDraftsForShop, publishProductByShop, findAllPublishedForShop, unPublishProductByShop, searchProducts, findAllProducts, findProduct} = require('../models/repositories/product.repo')
+const {findAllDraftsForShop, publishProductByShop, findAllPublishedForShop, unPublishProductByShop, searchProducts, findAllProducts, findProduct, updateProductById} = require('../models/repositories/product.repo')
 class ProductFactory{
 
     static productRegistry = {
@@ -33,6 +33,13 @@ class ProductFactory{
     static async unPublishProductByShop(shopId, productId){
         if(!shopId || !productId) throw new BadRequestError('Shop id or product id is not valid')
         return await unPublishProductByShop(shopId, productId)
+    }
+
+    static async updateProduct(productType, productId, payload){
+        const productClass = this.productRegistry[productType]
+        if(!productClass) throw new BadRequestError('Product type not found')
+        const updateProduct = await new productClass(payload).updateProduct(productId)
+        return updateProduct
     }
     //END PUT//
     //GET//
@@ -97,6 +104,11 @@ class Product{
     async createProduct(productId){
         return await product.create({...this, _id: productId})
     }
+
+    async updateProduct(productId, payload){
+        const updateProduct =  await updateProductById({productId, data:payload, model: product})
+        return updateProduct
+    }
 }
 
 class Clothing extends Product{
@@ -109,6 +121,17 @@ class Clothing extends Product{
         if(!newProduct) throw new BadRequestError('Create new Product failed')
 
         return newProduct
+    }
+
+    async updateProduct(productId){
+        const objParams = this
+        if(objParams.product_attributes){
+            
+            await updateProductById({productId, data:objParams.product_attributes, model: clothing})
+        }
+
+        const updateProduct = await super.updateProduct(productId, {...objParams})
+        return updateProduct
     }
 }
 

@@ -13,6 +13,7 @@ class ProductController {
             }),
         }).send(res);
     }
+    
 
     findAllDraftsForShop = async (req, res, next) => {
         new OK({
@@ -66,6 +67,17 @@ class ProductController {
         new OK({
             message: "Find product successfully",
             metadata: await ProductService.findProduct(req.params.id),
+        }).send(res);
+    }
+
+    updateProduct = async (req, res, next) => {
+        new OK({
+            message: "Update product successfully",
+            metadata: await ProductService.updateProduct(
+                req.body.product_type,
+                req.params.id,
+                {...req.body,
+                product_shop:req.keyStore.user._id}),
         }).send(res);
     }
 
