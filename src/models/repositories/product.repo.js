@@ -72,9 +72,6 @@ const findProduct = async (productId, unSelect) => {
 }
 
 const updateProductById = async ({productId, data, model, isNew=true}) => {
-    console.log(model)
-    console.log(data)
-    console.log(productId)
     const updateProduct = await model.findByIdAndUpdate(productId, data, {
         new: isNew,
     })

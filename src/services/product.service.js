@@ -3,6 +3,7 @@
 const {product, clothing, electronic, furniture} = require('../models/product.model')
 const { BadRequestError, AuthFailureError, ForbiddenError } = require('../core/error.response')
 const {findAllDraftsForShop, publishProductByShop, findAllPublishedForShop, unPublishProductByShop, searchProducts, findAllProducts, findProduct, updateProductById} = require('../models/repositories/product.repo')
+const { insertInventory } = require('../models/repositories/inventory.repo')
 class ProductFactory{
 
     static productRegistry = {
@@ -102,7 +103,15 @@ class Product{
     }
 
     async createProduct(productId){
-        return await product.create({...this, _id: productId})
+        const newProduct = await product.create({...this, _id: productId})
+        if(newProduct){
+            await insertInventory({
+                productId: newProduct._id,
+                shopId: this.product_shop,
+                stock: this.product_quantity,
+            })
+        }
+        return newProduct
     }
 
     async updateProduct(productId, payload){
@@ -146,6 +155,17 @@ class Electronic extends Product{
 
         return newProduct
     }
+
+    async updateProduct(productId){
+        const objParams = this
+        if(objParams.product_attributes){
+            
+            await updateProductById({productId, data:objParams.product_attributes, model: electronic})
+        }
+
+        const updateProduct = await super.updateProduct(productId, {...objParams})
+        return updateProduct
+    }
 }
 
 class Furniture extends Product{
@@ -157,6 +177,17 @@ class Furniture extends Product{
         if(!newProduct) throw new BadRequestError('Create new Product failed')
 
         return newProduct
+    }
+
+    async updateProduct(productId){
+        const objParams = this
+        if(objParams.product_attributes){
+            
+            await updateProductById({productId, data:objParams.product_attributes, model: furniture})
+        }
+
+        const updateProduct = await super.updateProduct(productId, {...objParams})
+        return updateProduct
     }
 }
 
