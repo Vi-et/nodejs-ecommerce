@@ -23,6 +23,10 @@ const discountSchema = new Schema({
         type:Number,
         required:true
     },
+    maxValue:{
+        type:Number,
+        default: 0,
+    },
     code:{
         type:String,
         required:true,

@@ -4,27 +4,25 @@ const {BadRequestError} = require('../core/error.response')
 const {discount} = require('../models/discount.model')
 const {removeUndefinedObject} = require('../utils/index')
 const {findAllProducts} = require('../models/repositories/product.repo')
-const { product } = require('../models/product.model')
-const { findAllDiscountCodesUnselect } = require('../models/repositories/discount.repo')
-
+const { findAllDiscountCodesUnselect, checkDiscountExists } = require('../models/repositories/discount.repo')
+const {DiscountValidatorBuilder, NewDiscountValidatorBuilder} = require("../validation/discount.validation")
 class DiscountService {
 
     static async createDiscount(payload){
         const {name, description, type, value, code, startDate, endDate, maxUses, usesCount, 
-            usersUsed, maxUsesPerUser, minOrderValue, shopId, isActive, appliesTo,productIds
+            usersUsed, maxUsesPerUser, minOrderValue, shopId, isActive, appliesTo,productIds, maxValue
 } = payload
 
-        if( new Date() < new Date(startDate) || new Date() > new Date(endDate)){
-            throw new BadRequestError('Discount start date must be in the future')
+        const validator = new NewDiscountValidatorBuilder(payload)
+            .validateDates()
+            .validatePercentageValue()
+            .validateAppliesTo()
+        await validator.validateExisted(code, shopId)
+        const validationResult = validator.build()
+
+        if(!validationResult.isValid) {
+            throw new BadRequestError(validationResult.errors[0])
         }
-
-        if( new Date(startDate) > new Date(endDate)){
-            throw new BadRequestError('Discount start date must be before end date')
-        }
-
-        const foundDiscount = await discount.findOne({code: code, shopId: shopId}).lean().exec()
-
-        if(foundDiscount.isActive && foundDiscount) throw new BadRequestError('Discount code already exists')
         
         const newDiscount = await discount.create({
             name, description, code, type, value,
@@ -47,11 +45,16 @@ class DiscountService {
         
     }
 
-    static async getAllDiscountCodesWithProduct({code, shopId, userId, limit, page}){
-        const foundDiscount = await discount.findOne({discount_code: code, discount_shopId: shopId}).lean().exec()
+    static async getAllDiscountCodesWithProduct({code, shopId, limit, page}){
+        const foundDiscount = await discount.findOne({code, shopId}).lean().exec()
     
-        if(!foundDiscount || foundDiscount.isActive === false) {
-            throw new BadRequestError('Discount code not found or inactive')
+        const validationResult = new DiscountValidatorBuilder(foundDiscount)
+            .validateDiscountExists()
+            .validateActive()
+            .build()
+        if(!validationResult.isValid) {
+            console.log("validationResult", validationResult)
+            throw new BadRequestError(validationResult.errors[0])
         }
 
         const {appliesTo, productIds} = foundDiscount
@@ -67,6 +70,8 @@ class DiscountService {
                 sort: 'ctime',
                 select: ["product_name"]
             })
+
+            return products
         }
 
         if(appliesTo === 'specific') {
@@ -81,8 +86,9 @@ class DiscountService {
                 sort: 'ctime',
                 select: ["product_name"]
             })
+
+            return products
         }
-        return products
     }
 
     static async getAllDiscountCodesByShop({shopId, limit, page}){
@@ -98,4 +104,69 @@ class DiscountService {
             model: discount
         })
     }
+
+    static async getDiscountAmount({code, shopId, userId, products}){
+        const foundDiscount = await checkDiscountExists({filter: {code: code, shopId: shopId}, model: discount})
+
+        let totalOrderValue = products.reduce((acc, product) => {
+            return acc + product.quantity * product.price
+        }, 0)
+        const validationResult = new DiscountValidatorBuilder(foundDiscount)
+            .validateDiscountExists()
+            .validateActive()
+            .validateStartDate()
+            .validateEndDate()
+            .validateMaxUses()
+            .validateMinOrderValue(totalOrderValue)
+            .validateUserUsage(userId)
+            .build()
+
+        if(!validationResult.isValid) {
+            throw new BadRequestError(validationResult.errors[0])
+        }
+
+        const amount = foundDiscount.type === "fixed_amount" ? foundDiscount.value : (totalOrderValue * foundDiscount.value) / 100
+        return {
+            totalOrder,
+            discount: amount,
+            totalPrice: totalOrderValue - amount,
+        }
+    }
+
+    static async deleteDiscountCode({shopId, code}){
+        const deleteDiscountCode = await discount.findOneAndDelete({
+            code,
+            shopId,
+        }).lean().exec()
+
+        return deleteDiscountCode
+    }
+
+    static async cancelDiscountCode({shopId, code, userId}){
+        const foundDiscount = await checkDiscountExists({filter: {code: code, shopId: shopId}, model: discount})
+        
+        const validationResult = new DiscountValidatorBuilder(foundDiscount)
+            .validateDiscountExists()
+        
+        if(!validationResult.isValid) {
+            throw new BadRequestError(validationResult.errors[0])
+        }
+
+        const result = await discount.findByIdAndUpdate(foundDiscount._id, {
+            $pull:{
+                usersUsed: userId,
+            },
+            $inc:{
+                maxUses: 1,
+                usesCount: -1,
+            }
+        }, {
+            new: true,
+        }).lean().exec()
+
+        return result
+    
+    }
 }
+
+module.exports = DiscountService
