@@ -36,14 +36,12 @@ var productSchema = new mongoose.Schema({
     isDraft:{
         type:Boolean,
         default: true,
-        index: true,
-        select: false
+        index: true
     },
     isPublished:{
         type:Boolean,
         default: false,
-        index: true,
-        select: false
+        index: true
     },
     product_price:{
         type:Number,

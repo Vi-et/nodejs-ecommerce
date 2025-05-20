@@ -78,6 +78,10 @@ const updateProductById = async ({productId, data, model, isNew=true}) => {
     return updateProduct
 }
 
+const getProductById = async(productId) => {
+    return await product.findById({_id:productId}).lean().exec()
+}
+
 module.exports = {
     findAllDraftsForShop,
     publishProductByShop,
@@ -86,5 +90,6 @@ module.exports = {
     searchProducts,
     findAllProducts,
     findProduct,
-    updateProductById
+    updateProductById,
+    getProductById
 }

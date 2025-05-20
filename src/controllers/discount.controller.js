@@ -2,7 +2,7 @@
 const { CREATED, OK } = require('../core/success.response');
 const DiscountService = require('../services/discount.service');
 
-class ProductController {
+class DiscountController {
 
     createDiscount = async (req, res, next) => {
         new CREATED({
@@ -32,4 +32,4 @@ class ProductController {
     
 }
 
-module.exports = new ProductController();
+module.exports = new DiscountController();

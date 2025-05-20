@@ -53,7 +53,6 @@ class DiscountService {
             .validateActive()
             .build()
         if(!validationResult.isValid) {
-            console.log("validationResult", validationResult)
             throw new BadRequestError(validationResult.errors[0])
         }
 
