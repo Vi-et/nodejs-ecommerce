@@ -1,6 +1,7 @@
 'use strict'
 
-const Comment = require('../models/comment.model')
+const Comment = require('../models/comment.model');
+const { getProductById } = require('../models/repositories/product.repo');
 
 class CommentService {
  
@@ -52,6 +53,50 @@ class CommentService {
 
         return await comment.save();
     }  
+
+    static async getCommentsByParentId({
+        productIdu      ,
+        parentId = null,
+        limit = 50,
+        offset = 0
+    }){
+        if(parentId){
+            // Lấy tất cả comment con/cháu của parentId (dùng Nested Set Model)
+            const parentComment = await Comment.findById(parentId);
+            if(!parentComment){
+                throw new Error('Parent comment not found')
+            }
+            const comments = await Comment.find({
+                comment_productId: productId,
+                comment_left: {$gt: parentComment.comment_left},   // $gt: không lấy chính parent
+                comment_right: {$lt: parentComment.comment_right},  // $lt: không lấy chính parent
+                isDeleted: false
+            }).sort({comment_left: 1}).lean().exec();
+            return comments;
+        }
+
+        // Lấy tất cả root comment (không có parent)
+        const comments = await Comment.find({
+            comment_productId: productId,
+            comment_parentId: null   // null: chỉ lấy root comments
+        }).sort({comment_left: 1}).lean().exec();
+
+        return comments;
+    }
+
+    static async deleteComment({commentId, productId}){
+        const foundProduct = await getProductById(productId);
+        if(!foundProduct){
+            throw new Error('Product not found')
+        }
+
+        const comment = await Comment.findById(commentId);
+        if(!comment){
+            throw new Error('Comment not found')
+        }
+
+        
+    }
 }
 
 module.exports = CommentService

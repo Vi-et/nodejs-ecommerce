@@ -8,5 +8,7 @@ const { authentication } = require('../../auth/authUtils')
 
 router.use(authentication)
 router.post('', asyncHandler(commentController.createComment))
+router.get('', asyncHandler(commentController.getCommentsByParentId))
+
 
 module.exports = router;
