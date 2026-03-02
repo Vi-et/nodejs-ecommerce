@@ -95,7 +95,35 @@ class CommentService {
             throw new Error('Comment not found')
         }
 
-        
+        const leftValue = comment.comment_left;
+        const rightValue = comment.comment_right;
+
+        // Tính toán số lượng node cần xóa (bao gồm cả comment con/cháu)
+        const range = rightValue - leftValue + 1;
+
+        // Xóa tất cả comment trong phạm vi [leftValue, rightValue]
+        await Comment.deleteMany({
+            comment_productId: productId,
+            comment_left: {$gte: leftValue},
+            comment_right: {$lte: rightValue}
+        });
+
+        // Cập nhật lại left và right của các node nằm ngoài phạm vi đã xóa
+        await Comment.updateMany({
+            comment_productId: productId,
+            comment_left: {$gt: rightValue}
+        }, {
+            $inc: {comment_left: -range}
+        });
+
+        await Comment.updateMany({
+            comment_productId: productId,
+            comment_right: {$gt: rightValue}
+        }, {
+            $inc: {comment_right: -range}
+        });
+
+        return {message: 'Comment deleted successfully'};
     }
 }
 
