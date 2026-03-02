@@ -15,6 +15,12 @@ app.use(express.urlencoded({extended: true}));
 require('./dbs/init.mongo');
 const {checkOverload} = require('./helpers/check.connect');
 checkOverload();
+
+// //test pubsub redis
+// require('./tests/inventory.test');
+// const productServiceTest = require('./tests/product.test');
+// productServiceTest.purchaseProduct('abc', 10);
+
 //init routes
 app.use('', require('./routes'));
 //handling error
