@@ -4,6 +4,7 @@ const {product, clothing, electronic, furniture} = require('../models/product.mo
 const { BadRequestError, AuthFailureError, ForbiddenError } = require('../core/error.response')
 const {findAllDraftsForShop, publishProductByShop, findAllPublishedForShop, unPublishProductByShop, searchProducts, findAllProducts, findProduct, updateProductById} = require('../models/repositories/product.repo')
 const { insertInventory } = require('../models/repositories/inventory.repo')
+const { pushNotiToSystem } = require('./notification.service')
 class ProductFactory{
 
     static productRegistry = {
@@ -19,6 +20,16 @@ class ProductFactory{
         const productCLass = this.productRegistry[productType]
         if(!productCLass) throw new BadRequestError('Product type not found')
         const newProduct = await new productCLass(payload).createProduct()
+
+        pushNotiToSystem({
+            type: 'SHOP-001',
+            receivedId: '67f7edad55517b1049f5491c',
+            senderId: newProduct.product_shop._id,
+            options: {
+                product_name: newProduct.product_name,
+                shop_name: newProduct.product_shop.name
+            }
+        }).then(rs => console.log(rs)).catch(err => console.log(err))
         return newProduct
     }
 
