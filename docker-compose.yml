@@ -29,6 +29,12 @@ services:
       - kafka-network
     volumes:
       - kafka_data:/bitnami/kafka
+  rabbitmq:
+    image: rabbitmq:3-management # Bắt buộc phải có chữ "management"
+    container_name: rabbitmq-server
+    ports:
+      - "5672:5672" # Cửa phụ để code Node.js gửi/nhận tin nhắn
+      - "15672:15672" # Cửa chính để bạn truy cập giao diện web
 
 volumes:
   redis_data:
