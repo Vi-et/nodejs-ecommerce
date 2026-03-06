@@ -1,6 +1,7 @@
 'use strict';
 const { OK } = require('../core/success.response');
 const { uploadImageFromUrl, uploadImageFromLocal, uploadImagesFromLocal } = require('../services/upload.service');
+const {uploadImageS3} = require('../services/s3.service')
 
 class UploadController {
 
@@ -26,6 +27,15 @@ class UploadController {
         new OK({
             message: "Upload multiple images successfully",
             metadata: await uploadImagesFromLocal({files}),
+        }).send(res);
+    }
+
+    uploadImageS3 = async (req, res, next) => {
+        const {file} = req
+        if(!file) throw new Error('File not found')
+        new OK({
+            message: "Upload image S3 successfully",
+            metadata: await uploadImageS3({file}),
         }).send(res);
     }
 
