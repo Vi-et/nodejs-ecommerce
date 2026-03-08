@@ -1,0 +1,19 @@
+'use strict'
+
+const express = require('express')
+const router = express.Router()
+const profileController = require('../../controllers/profile.controller')
+const { asyncHandler } = require('../../auth/checkAuth')
+const { grantAccess } = require('../../../middlewares/rbac')
+
+router.get(
+    '/viewAny', grantAccess('readAny', 'profile'), asyncHandler(profileController.profiles)
+)
+
+const profile = {
+
+}
+router.get(
+    '/viewOwn', grantAccess('readOwn', 'profile'), asyncHandler(profileController.profile)
+)
+module.exports = router

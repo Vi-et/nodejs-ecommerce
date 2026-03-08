@@ -14,5 +14,6 @@ router.use('/v1/api/user', require('./access'))
 router.use('/v1/api/comment', require('./comment'))
 router.use('/v1/api/notification', require('./notification'))
 router.use('/v1/api/upload', require('./upload'))
+router.use('/v1/api/profile', require('./profile'))
 
 module.exports = router
