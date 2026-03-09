@@ -37,20 +37,7 @@ app.use((error, req, res, next) => {
   const statusCode = error.statusCode || 500;
   const resMessage = error.message || "Internal Server Error";
 
-  // Nếu là ErrorResponse (hoặc subclass), dùng method .log() của nó
-  // Method .log() có flag _logged để đảm bảo không log trùng
-  if (error instanceof ErrorResponse) {
-    error.log(req.path, req.headers["x-request-id"] || "unknown");
-  } else {
-    // Lỗi thường (Error, SyntaxError...) thì log trực tiếp
-    MyLogger.logError(resMessage, {
-      context: req.path,
-      requestId: req.headers["x-request-id"] || "unknown",
-      message: resMessage,
-      stack: error.stack,
-      metadata: {},
-    });
-  }
+  MyLogger.error(resMessage, [req.path, req, { stack: error.stack }]);
 
   return res.status(statusCode).json({
     status: "error",

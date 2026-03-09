@@ -17,19 +17,8 @@ class ErrorResponse extends Error {
   constructor(message, status) {
     super(message);
     this.statusCode = status;
-    this._logged = false; // flag để tránh log trùng
-  }
 
-  log(context = "unknown", requestId = "unknown") {
-    if (this._logged) return; // đã log rồi thì bỏ qua
-    this._logged = true;
-    MyLogger.logError(this.message, {
-      context,
-      requestId,
-      message: this.message,
-      stack: this.stack,
-      metadata: this.metadata || {},
-    });
+    MyLogger.error(this.message, ["test_api", "v3334444", { erorr: "Bad" }]);
   }
 }
 

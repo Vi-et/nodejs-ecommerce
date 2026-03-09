@@ -1,7 +1,7 @@
 "use strict";
 const { createLogger, format, transports } = require("winston");
+const { randomUUID } = require("crypto");
 require("winston-daily-rotate-file");
-
 class MyLogger {
   constructor() {
     const formatPrint = format.printf(
@@ -48,36 +48,36 @@ class MyLogger {
     });
   }
 
-  logInfo(message, params = {}) {
-    this.logger.info(message, params);
+  commonParams(params) {
+    let context, req, metadata;
+    if (!Array.isArray(params)) {
+      context = params;
+    } else {
+      [context, req, metadata] = params;
+    }
+
+    // Lấy requestId từ header, req có thể là object hoặc string (khi test hardcode)
+    const requestId =
+      (req && typeof req === "object" ? req.headers?.["x-request-id"] : req) ||
+      randomUUID();
+
+    return {
+      context,
+      requestId,
+      metadata,
+    };
   }
 
-  logError(message, params = {}) {
-    this.logger.error(message, params);
+  log(message, params) {
+    const paramLog = this.commonParams(params);
+    const logObject = Object.assign({ message }, paramLog);
+    this.logger.info(logObject);
   }
 
-  logWarn(message, params = {}) {
-    this.logger.warn(message, params);
-  }
-
-  logDebug(message, params = {}) {
-    this.logger.debug(message, params);
-  }
-
-  logHttp(message, params = {}) {
-    this.logger.http(message, params);
-  }
-
-  logSilly(message, params = {}) {
-    this.logger.silly(message, params);
-  }
-
-  logVerbose(message, params = {}) {
-    this.logger.verbose(message, params);
-  }
-
-  logDebug(message, params = {}) {
-    this.logger.debug(message, params);
+  error(message, params) {
+    const paramLog = this.commonParams(params);
+    const logObject = Object.assign({ message }, paramLog);
+    this.logger.error(logObject); // ← phải dùng .error() để ghi vào error log
   }
 }
 

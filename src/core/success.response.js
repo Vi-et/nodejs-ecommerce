@@ -1,5 +1,5 @@
 "use strict";
-const MyLogger = require("../loggers/mylogger.log");
+const myLogger = require("../loggers/mylogger.log");
 
 const StatusCode = {
   OK: 200,
@@ -28,7 +28,7 @@ class SuccessResponse {
 
   send(res, headers = {}) {
     const req = res.req;
-    MyLogger.logInfo(this.message, {
+    myLogger.log(this.message, {
       context: req.path,
       requestId: req.headers["x-request-id"] || "unknown",
       message: this.message,
