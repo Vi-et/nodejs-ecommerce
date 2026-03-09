@@ -4,7 +4,7 @@ const express = require('express')
 const router = express.Router()
 const profileController = require('../../controllers/profile.controller')
 const { asyncHandler } = require('../../auth/checkAuth')
-const { grantAccess } = require('../../../middlewares/rbac')
+const { grantAccess } = require('../../middlewares/rbac')
 
 router.get(
     '/viewAny', grantAccess('readAny', 'profile'), asyncHandler(profileController.profiles)

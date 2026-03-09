@@ -1,8 +1,8 @@
 'use strict';
 
-const { AuthFailureError } = require('../src/core/error.response');
+const { AuthFailureError } = require('../core/error.response');
 const rbac = require('./role.middleware')
-const { roleList } = require('../src/services/rbac.service')
+const { roleList } = require('../services/rbac.service')
 /**
  * * @param {string} action // read, delete or update
  * @param {*} resource // profile, balance/..
