@@ -1,0 +1,57 @@
+const { NotFoundError } = require("../core/error.response");
+const { findShopById } = require("../models/repositories/shop.repo");
+const { newSku } = require("./sku.service");
+const SPU_MODEL = require("../models/spu.model");
+const { randomProductId } = require("../utils");
+
+const newSpu = async ({
+  product_name,
+  product_thumb,
+  product_description,
+  product_price,
+  product_category,
+  product_shop,
+  product_attributes,
+  product_quantity,
+  product_variations,
+  sku_list = [],
+}) => {
+  try {
+    // 1. check if Shop exists
+    const foundShop = await findShopById({
+      shop_id: product_shop,
+    });
+    if (!foundShop) throw new NotFoundError("Shop not found");
+
+    // 2. create a new SPU
+    const spu = await SPU_MODEL.create({
+      product_id: randomProductId(),
+      product_name,
+      product_thumb,
+      product_description,
+      product_price,
+      product_category,
+      product_shop,
+      product_attributes,
+      product_quantity,
+      product_variations,
+    });
+
+    // 3. get spu_id add to sku.service
+    if (spu && sku_list.length) {
+      // 3. create skus
+      newSku({ sku_list, spu_id: spu.product_id }).then();
+    }
+
+    // 4. sycn data via elasticsearch (search.service)
+
+    // 5. respond reault object
+    return spu;
+  } catch (error) {
+    throw error;
+  }
+};
+
+module.exports = {
+  newSpu,
+};

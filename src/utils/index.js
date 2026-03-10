@@ -56,6 +56,10 @@ const replacePlaceholder = (template, params) => {
   return template; // ← bắt buộc phải return
 };
 
+const randomProductId = () => {
+  return Math.floor(Math.random() * 1000000);
+};
+
 module.exports = {
   getInfoData,
   getSelectData,
@@ -64,4 +68,5 @@ module.exports = {
   updateNestedObjectParser,
   convertStringToObjectId,
   replacePlaceholder,
+  randomProductId,
 };
