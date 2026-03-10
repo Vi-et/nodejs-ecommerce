@@ -16,10 +16,8 @@ require("./dbs/init.mongo");
 const { checkOverload } = require("./helpers/check.connect");
 checkOverload();
 
-// //test pubsub redis
-// require('./tests/inventory.test');
-// const productServiceTest = require('./tests/product.test');
-// productServiceTest.purchaseProduct('abc', 10);
+const initRedis = require("./dbs/init.redis");
+initRedis.initRedis();
 
 //init routes
 app.use("", require("./routes"));
