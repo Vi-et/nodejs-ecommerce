@@ -1,6 +1,6 @@
 "use strict";
 
-const redis = require("redis");
+const redis = require("ioredis");
 const { RedisError } = require("../core/error.response");
 
 let client = {},
@@ -55,8 +55,12 @@ const {
 } = require("../configs/config.redis");
 
 const initRedis = async () => {
-  const instanceRedis = redis.createClient({
-    url: `redis://${host}:${port}`,
+  const instanceRedis = new redis({
+    host,
+    port,
+    maxRetriesPerRequest: null,
+    enableReadyCheck: false,
+    lazyConnect: true,
   });
   client.instanceConnect = instanceRedis;
   handleEventConnection({ connectionRedis: instanceRedis });
