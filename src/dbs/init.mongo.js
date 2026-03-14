@@ -1,35 +1,37 @@
-'use strict'
+"use strict";
 
-const mongoose = require('mongoose');
-const {db : {host, port, name}} = require('../configs/config.mongodb')
-const {countConnect} = require('../helpers/check.connect');
+const mongoose = require("mongoose");
+const {
+  db: { host, port, name },
+} = require("../configs/config.mongodb");
+const { countConnect } = require("../helpers/check.connect");
 
-const connectString = `mongodb://${host}:${port}/${name}`;
+const connectString = `mongodb://shopdev_mongodb:27017/shopdev`;
 
+class Database {
+  constructor() {
+    this._connect();
+  }
+  _connect() {
+    mongoose.set("debug", true);
+    mongoose.set("debug", { color: true });
 
-class Database{
-    constructor(){
-        this._connect();
+    mongoose
+      .connect(connectString)
+      .then((_) => {
+        console.log("Connected to MongoDB", countConnect());
+      })
+      .catch((err) => {
+        console.error(err);
+      });
+  }
+
+  static getInstance() {
+    if (!this.instance) {
+      this.instance = new Database();
     }
-    _connect(){
-
-        mongoose.set('debug', true);
-        mongoose.set('debug', {color: true});
-
-        mongoose.connect(connectString).then(_ => {
-            console.log('Connected to MongoDB', countConnect());
-        }).catch(err => {
-            console.error(err);
-        });
-    }
-
-    static getInstance(){
-        if(!this.instance){
-            this.instance = new Database();
-        }
-        return this.instance;
-    }
-
+    return this.instance;
+  }
 }
 const instanceMongo = Database.getInstance();
 module.exports = instanceMongo;

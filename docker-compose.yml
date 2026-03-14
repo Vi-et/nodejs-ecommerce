@@ -1,18 +1,32 @@
 services:
+  app:
+    build:
+      context: .
+      args:
+        - DEV=true
+    container_name: shopdev_app
+    ports:
+      - "3000:3000" # Mở cửa cho khách truy cập
+    depends_on:
+      - redis
+      - kafka
+      - rabbitmq
+      - elasticsearch
+
   redis:
     image: redis:alpine
-    container_name: nodejs-ecommerce-redis
+    container_name: shopdev_redis
     ports:
       - "${REDIS_PORT:-6379}:6379"
     command: redis-server --appendonly yes
     volumes:
       - redis_data:/data
     networks:
-      - kafka-network
+      - shopdev-network
 
   kafka:
     image: bitnamilegacy/kafka:latest
-    container_name: kafkaMQ
+    container_name: shopdev_kafka
     ports:
       - "9092:9092"
       - "9094:9094"
@@ -20,21 +34,25 @@ services:
       - KAFKA_CFG_NODE_ID=1
       - KAFKA_CFG_PROCESS_ROLES=controller,broker
       - KAFKA_CFG_LISTENERS=PLAINTEXT://:9092,CONTROLLER://:9093,EXTERNAL://:9094
-      - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://kafkaMQ:9092,EXTERNAL://localhost:9094
+      - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://shopdev_kafka:9092,EXTERNAL://localhost:9094
       - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=CONTROLLER:PLAINTEXT,EXTERNAL:PLAINTEXT,PLAINTEXT:PLAINTEXT
       - KAFKA_CFG_CONTROLLER_QUORUM_VOTERS=1@localhost:9093
       - KAFKA_CFG_CONTROLLER_LISTENER_NAMES=CONTROLLER
       - KAFKA_CFG_INTER_BROKER_LISTENER_NAME=PLAINTEXT
-    networks:
-      - kafka-network
     volumes:
       - kafka_data:/bitnami/kafka
+    networks:
+      - shopdev-network
+
   rabbitmq:
-    image: rabbitmq:3-management # Bắt buộc phải có chữ "management"
-    container_name: rabbitmq-server
+    image: rabbitmq:3-management
+    container_name: shopdev_rabbitmq
     ports:
-      - "5672:5672" # Cửa phụ để code Node.js gửi/nhận tin nhắn
-      - "15672:15672" # Cửa chính để bạn truy cập giao diện web
+      - "5672:5672"
+      - "15672:15672"
+    networks:
+      - shopdev-network
+
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:7.10.0
     container_name: shopdev_es
@@ -50,21 +68,36 @@ services:
     volumes:
       - esdata:/usr/share/elasticsearch/data
     ports:
-      - 9200:9200
+      - "9200:9200"
+    networks:
+      - shopdev-network
 
   kibana:
     image: docker.elastic.co/kibana/kibana:7.10.0
     container_name: shopdev_kibana
     ports:
-      - 5601:5601
+      - "5601:5601"
     depends_on:
       - elasticsearch
+    networks:
+      - shopdev-network
+  mongodb:
+    image: mongo:latest
+    container_name: shopdev_mongodb
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    networks:
+      - shopdev-network
+
 volumes:
   redis_data:
   kafka_data:
   esdata:
     driver: local
+  mongo_data:
 
 networks:
-  kafka-network:
+  shopdev-network:
     driver: bridge
