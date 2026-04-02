@@ -3,12 +3,13 @@ FROM node:20-alpine AS builder
 WORKDIR /usr/src/app
 
 COPY package*.json ./
-RUN npm install
+RUN npm install &&\
+    npm cache clean --force
 
 COPY . .
 
 # Đã sửa: Gọi đúng tên hãng (@vercel/ncc) và thêm giấy ủy quyền (-y)
-RUN npx -y @vercel/ncc build server.js -o dist
+RUN npx -y @vercel/ncc build server.js -o dist -m
 
 
 # --- GIAI ĐOẠN 2: Nhà mới ---
@@ -26,4 +27,4 @@ USER node
 
 EXPOSE 3000
 
-CMD ["node", "index.js"]
+CMD ["node", "--enable-source-maps", "index.js"]
