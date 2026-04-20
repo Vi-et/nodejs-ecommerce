@@ -2,3 +2,5 @@
 /.env
 /src/keys/*
 /src/logs
+.agent/
+experiment/

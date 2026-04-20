@@ -19,6 +19,9 @@ checkOverload();
 const initRedis = require("./dbs/init.redis");
 initRedis.initRedis();
 
+const { rateLimitMiddleware } = require("./middlewares/rateLimit.middleware");
+app.use(rateLimitMiddleware(100, 60));
+
 //init routes
 app.use("", require("./routes"));
 //handling error
